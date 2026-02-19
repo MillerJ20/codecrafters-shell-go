@@ -10,15 +10,7 @@ func main() {
 
 	var command string
 	
-	n, err := fmt.Scanln(&command)
-	if err != nil {
-		log.Fatal(err)
-	}
-	
-	if n < 0 {
-		log.Fatal("Wow bad number!")
-	}
-
+	fmt.Scanln(&command)
 	fmt.Printf("%s: command not found", command)
 }
 
