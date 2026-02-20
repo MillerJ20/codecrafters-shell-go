@@ -43,7 +43,7 @@ func parseCommand(line string) {
 					break
 			}
 
-			fmt.Printf("%s: command not found \n", currCommand)
+			fmt.Printf("%s: not found \n", currCommand)
 		}
 	default:
 		fmt.Printf("%s: command not found \n", command)
