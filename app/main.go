@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"slices"
 	"strings"
 )
 
@@ -28,8 +29,21 @@ func parseCommand(line string) {
 	case "exit":
 		os.Exit(0)
 	case "echo":
-		if len(parts) > 1{
+		if len(parts) > 1 {
 			fmt.Printf("%s \n", parts[1])
+		}
+	case "type":
+		builtins := []string{"exit", "echo", "type"}
+		if len(parts) > 1 {
+			commands := strings.Split(parts[1], " ")
+			currCommand := commands[0]
+
+			if slices.Contains(builtins, currCommand) {
+					fmt.Printf("%s is a shell builtin \n", currCommand)
+					break
+			}
+
+			fmt.Printf("%s: command not found \n", command)
 		}
 	default:
 		fmt.Printf("%s: command not found \n", command)
