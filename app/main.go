@@ -29,7 +29,7 @@ func parseCommand(line string) {
 		os.Exit(0)
 	case "echo":
 		if len(parts) > 1{
-			fmt.Printf(" %s \n", parts[1])
+			fmt.Printf("%s \n", parts[1])
 		}
 	default:
 		fmt.Printf("%s: command not found \n", command)
