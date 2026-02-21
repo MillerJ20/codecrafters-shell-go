@@ -43,6 +43,7 @@ func parseCommand(line string) {
 				cmd.Stderr = os.Stderr
 				cmd.Stdout = os.Stdout
 				cmd.Run()
+				break
 			}
 			cmd := exec.Command(command)
 			cmd.Stderr = os.Stderr
