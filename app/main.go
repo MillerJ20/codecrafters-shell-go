@@ -21,7 +21,7 @@ func main() {
 }
 
 func parseCommand(line string) {
-	parts := strings.SplitN(line, " ", 2)
+	parts := strings.Fields(line)
 	command := parts[0]
 
 	switch command {
@@ -39,9 +39,15 @@ func parseCommand(line string) {
 		_, wasFound := findCommandInPATH(command)
 		if wasFound {
 			if len(parts) > 1 {
-				exec.Command(command, strings.Split(parts[1], " ")...)
+				cmd := exec.Command(command, parts[1:]...)
+				cmd.Stderr = os.Stderr
+				cmd.Stdout = os.Stdout
+				cmd.Run()
 			}
-			exec.Command(command)
+			cmd := exec.Command(command)
+			cmd.Stderr = os.Stderr
+			cmd.Stdout = os.Stdout
+			cmd.Run()
 			return
 		}
 		fmt.Printf("%s: command not found \n", command)
@@ -51,7 +57,7 @@ func parseCommand(line string) {
 func calculateTypes(parts []string) {
 	builtins := []string{"exit", "echo", "type"}
 	if len(parts) > 1 {
-		commands := strings.Split(parts[1], " ")
+		commands := strings.Fields(parts[1])
 		currCommand := commands[0]
 
 		if slices.Contains(builtins, currCommand) {
