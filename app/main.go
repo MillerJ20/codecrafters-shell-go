@@ -48,7 +48,6 @@ func parseCommand(line string) {
 			cmd.Stderr = os.Stderr
 			cmd.Stdout = os.Stdout
 			cmd.Run()
-			return
 		}
 		fmt.Printf("%s: command not found \n", command)
 	}
