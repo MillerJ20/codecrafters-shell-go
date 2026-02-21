@@ -36,6 +36,14 @@ func parseCommand(line string) {
 	case "type":
 		calculateTypes(parts)
 	default:
+		_, wasFound := findCommandInPATH(command)
+		if wasFound {
+			if len(parts) > 1 {
+				exec.Command(command, strings.Split(parts[1], " ")...)
+			}
+			exec.Command(command)
+			return
+		}
 		fmt.Printf("%s: command not found \n", command)
 	}
 }
