@@ -4,12 +4,13 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"os/exec"
 	"slices"
 	"strings"
 )
 
 func main() {
-		scanner := bufio.NewScanner(os.Stdin)
+	scanner := bufio.NewScanner(os.Stdin)
 	for true{
 		fmt.Print("$ ")
 
@@ -33,19 +34,42 @@ func parseCommand(line string) {
 			fmt.Printf("%s \n", parts[1])
 		}
 	case "type":
-		builtins := []string{"exit", "echo", "type"}
-		if len(parts) > 1 {
-			commands := strings.Split(parts[1], " ")
-			currCommand := commands[0]
-
-			if slices.Contains(builtins, currCommand) {
-					fmt.Printf("%s is a shell builtin \n", currCommand)
-					break
-			}
-
-			fmt.Printf("%s: not found \n", currCommand)
-		}
+		calculateTypes(parts)
 	default:
 		fmt.Printf("%s: command not found \n", command)
 	}
+}
+
+func calculateTypes(parts []string) {
+	builtins := []string{"exit", "echo", "type"}
+	if len(parts) > 1 {
+		commands := strings.Split(parts[1], " ")
+		currCommand := commands[0]
+
+		if slices.Contains(builtins, currCommand) {
+			fmt.Printf("%s is a shell builtin \n", currCommand)
+			return
+		}
+		
+		fullPath, wasFound := findCommandInPATH(currCommand)
+		if wasFound {
+			fmt.Printf("%s is %s\n", currCommand, fullPath)
+			return
+		}
+
+		fmt.Printf("%s: not found \n", currCommand)
+	}
+}
+
+func findCommandInPATH(command string) (fullPath string, wasFound bool){
+	path, err := exec.LookPath(command)
+	if err != nil {
+		fullPath = ""
+		wasFound = false
+		return 
+	}
+	
+	fullPath = path
+	wasFound = true
+	return
 }
