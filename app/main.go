@@ -31,7 +31,7 @@ func parseCommand(line string) {
 		os.Exit(0)
 	case "echo":
 		if len(parts) > 1 {
-			fmt.Printf("%s \n", parts[1])
+			fmt.Printf("%s \n", strings.Join(parts[1:], " "))
 		}
 	case "type":
 		calculateTypes(parts)
@@ -49,6 +49,7 @@ func parseCommand(line string) {
 			cmd.Stderr = os.Stderr
 			cmd.Stdout = os.Stdout
 			cmd.Run()
+			break
 		}
 		fmt.Printf("%s: command not found \n", command)
 	}
