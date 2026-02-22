@@ -35,6 +35,13 @@ func parseCommand(line string) {
 		}
 	case "type":
 		calculateTypes(parts)
+	case "pwd":
+		currDir, err := os.Getwd()
+		if err != nil {
+			fmt.Println(err)
+			break
+		}
+		fmt.Println(currDir)
 	default:
 		_, wasFound := findCommandInPATH(command)
 		if wasFound {
