@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -42,6 +43,15 @@ func parseCommand(line string) {
 			break
 		}
 		fmt.Println(currDir)
+	case "cd":
+		path, err := calculateDirectory(parts)
+		if err != nil {
+			fmt.Println(err)
+			break
+		}
+
+		os.Chdir(path)
+		
 	default:
 		_, wasFound := findCommandInPATH(command)
 		if wasFound {
@@ -60,6 +70,23 @@ func parseCommand(line string) {
 		}
 		fmt.Printf("%s: command not found \n", command)
 	}
+}
+
+func calculateDirectory(parts []string) (path string, err error) {
+	if len(parts) != 2 {
+		return "", errors.New("Command only accepts a single parameter of directory to change to")
+	}
+
+	file, err := os.Stat(parts[1])
+	if err != nil {
+		return "", err
+	}
+	
+	if file.IsDir() {
+		return parts[1], nil
+	}
+	
+	return "", errors.New("Path entered is not a directory")
 }
 
 func calculateTypes(parts []string) {
