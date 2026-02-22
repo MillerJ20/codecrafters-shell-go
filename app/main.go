@@ -46,7 +46,7 @@ func parseCommand(line string) {
 	case "cd":
 		path, err := resolvePath(parts)
 		if err != nil {
-			fmt.Printf("%s: %s \n", parts[0], err.Error())
+			fmt.Printf("%s: %s: %s \n", parts[0], parts[1], err.Error())
 			break
 		}
 
