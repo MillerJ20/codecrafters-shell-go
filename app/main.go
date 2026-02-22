@@ -46,7 +46,7 @@ func parseCommand(line string) {
 	case "cd":
 		path, err := calculateDirectory(parts)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Printf("%s: %s: %s \n", parts[0], parts[1], err.Error())
 			break
 		}
 
@@ -79,7 +79,7 @@ func calculateDirectory(parts []string) (path string, err error) {
 
 	file, err := os.Stat(parts[1])
 	if err != nil {
-		return "", err
+		return "", errors.New("No such file or directory")
 	}
 	
 	if file.IsDir() {
