@@ -44,9 +44,9 @@ func parseCommand(line string) {
 		}
 		fmt.Println(currDir)
 	case "cd":
-		path, err := calculateDirectory(parts)
+		path, err := resolvePath(parts)
 		if err != nil {
-			fmt.Printf("%s: %s: %s \n", parts[0], parts[1], err.Error())
+			fmt.Printf("%s: %s \n", parts[0], err.Error())
 			break
 		}
 
@@ -72,21 +72,32 @@ func parseCommand(line string) {
 	}
 }
 
-func calculateDirectory(parts []string) (path string, err error) {
+func resolvePath(parts []string) (path string, err error){
 	if len(parts) != 2 {
 		return "", errors.New("Command only accepts a single parameter of directory to change to")
 	}
 
-	file, err := os.Stat(parts[1])
-	if err != nil {
-		return "", errors.New("No such file or directory")
+	switch parts[1] {
+	case "~":
+		dirname, err := os.UserHomeDir()
+		if err!= nil {
+			return "", errors.New("Failed to traverse to directory")
+		}
+		return dirname, nil
+
+	default:
+		file, err := os.Stat(parts[1])
+		if err != nil {
+			return "", errors.New("No such file or directory")
+		}
+
+		if file.IsDir() {
+			return parts[1], nil
+		}
+
+		return "", errors.New("Path entered is not a directory")
 	}
-	
-	if file.IsDir() {
-		return parts[1], nil
-	}
-	
-	return "", errors.New("Path entered is not a directory")
+	return "", errors.New("Unable to traverse")
 }
 
 func calculateTypes(parts []string) {
