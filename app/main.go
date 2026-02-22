@@ -63,7 +63,7 @@ func parseCommand(line string) {
 }
 
 func calculateTypes(parts []string) {
-	builtins := []string{"exit", "echo", "type", "pwd"}
+	builtins := []string{"exit", "echo", "type", "pwd", "cd"}
 	if len(parts) > 1 {
 		commands := strings.Fields(parts[1])
 		currCommand := commands[0]
