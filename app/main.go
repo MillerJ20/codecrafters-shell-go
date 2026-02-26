@@ -12,72 +12,105 @@ import (
 
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
-	for true{
+	for {
 		fmt.Print("$ ")
 
 		scanner.Scan()
 
-		parseCommand(scanner.Text())
-	}	
-}
+		command, args := parseCommand(strings.TrimSpace(scanner.Text()))
 
-func parseCommand(line string) {
-	parts := strings.Fields(line)
-	command := parts[0]
+		switch command {
+		case "":
+			fmt.Print("\r")
+		case "..":
+			os.Chdir("../")
+		case "exit":
+			os.Exit(0)
+		case "echo":
+			fmt.Printf("%s \n", strings.Join(args, " "))
+		case "type":
+			calculateTypes(args)
+		case "pwd":
+			currDir, err := os.Getwd()
+			if err != nil {
+				fmt.Println(err)
+				break
+			}
+			fmt.Println(currDir)
+		case "cd":
+			path, err := resolvePath(args)
+			if err != nil {
+				fmt.Printf("%s: %s: %s \n", args[0], args[1], err.Error())
+				break
+			}
 
-	switch command {
-	case "":
-		fmt.Print("\r")
-	case "exit":
-		os.Exit(0)
-	case "echo":
-		if len(parts) > 1 {
-			fmt.Printf("%s \n", strings.Join(parts[1:], " "))
-		}
-	case "type":
-		calculateTypes(parts)
-	case "pwd":
-		currDir, err := os.Getwd()
-		if err != nil {
-			fmt.Println(err)
-			break
-		}
-		fmt.Println(currDir)
-	case "cd":
-		path, err := resolvePath(parts)
-		if err != nil {
-			fmt.Printf("%s: %s: %s \n", parts[0], parts[1], err.Error())
-			break
-		}
-
-		os.Chdir(path)
-		
-	default:
-		_, wasFound := findCommandInPATH(command)
-		if wasFound {
-			if len(parts) > 1 {
-				cmd := exec.Command(command, parts[1:]...)
+			os.Chdir(path)
+		default:
+			_, wasFound := findCommandInPATH(command)
+			if wasFound {
+				if len(args) > 0 {
+					cmd := exec.Command(command, args...)
+					cmd.Stderr = os.Stderr
+					cmd.Stdout = os.Stdout
+					cmd.Run()
+					break
+				}
+				cmd := exec.Command(command)
 				cmd.Stderr = os.Stderr
 				cmd.Stdout = os.Stdout
 				cmd.Run()
 				break
 			}
-			cmd := exec.Command(command)
-			cmd.Stderr = os.Stderr
-			cmd.Stdout = os.Stdout
-			cmd.Run()
-			break
+			fmt.Printf("%s: command not found \n", command)
 		}
-		fmt.Printf("%s: command not found \n", command)
+	}	
+}
+
+func parseCommand(line string) (command string, args []string){
+	command = strings.Fields(line)[0]
+	unparsedArgs := strings.TrimPrefix(line, command)
+	
+	inQuote := false
+	escaped := false
+	word := strings.Builder{}
+
+	flush := func () {
+		if len(word.String()) > 0 {
+			args = append(args, word.String())
+			word.Reset()
+		}
 	}
+
+	for _, c := range unparsedArgs {
+		switch  {
+		case escaped:
+			word.WriteRune(c)
+			escaped = false
+		case c == '\\':
+			escaped = true
+		case c == '\'': 
+			inQuote = !inQuote
+		case c == ' ' && !inQuote:
+			flush()
+		default:
+			word.WriteRune(c)
+		}
+	}
+
+	if escaped {
+		word.WriteRune('\\')
+	}
+
+	flush()
+	return command, args
 }
 
 func resolvePath(parts []string) (path string, err error){
-	if len(parts) != 2 {
+	if len(parts) != 1 {
 		return "", errors.New("Command only accepts a single parameter of directory to change to")
 	}
 
-	switch parts[1] {
+	switch parts[0] {
 	case "~":
 		dirname, err := os.UserHomeDir()
 		if err!= nil {
@@ -86,24 +119,23 @@ func resolvePath(parts []string) (path string, err error){
 		return dirname, nil
 
 	default:
-		file, err := os.Stat(parts[1])
+		file, err := os.Stat(parts[0])
 		if err != nil {
 			return "", errors.New("No such file or directory")
 		}
 
 		if file.IsDir() {
-			return parts[1], nil
+			return parts[0], nil
 		}
 
 		return "", errors.New("Path entered is not a directory")
 	}
-	return "", errors.New("Unable to traverse")
 }
 
 func calculateTypes(parts []string) {
 	builtins := []string{"exit", "echo", "type", "pwd", "cd"}
-	if len(parts) > 1 {
-		commands := strings.Fields(parts[1])
+	if len(parts) > 0 {
+		commands := strings.Fields(parts[0])
 		currCommand := commands[0]
 
 		if slices.Contains(builtins, currCommand) {
