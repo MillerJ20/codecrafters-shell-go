@@ -40,7 +40,7 @@ func main() {
 		case "cd":
 			path, err := resolvePath(args)
 			if err != nil {
-				fmt.Printf("%s: %s: %s \n", args[0], args[1], err.Error())
+				fmt.Printf("%s: %s: %s \n", command, args[0], err.Error())
 				break
 			}
 
